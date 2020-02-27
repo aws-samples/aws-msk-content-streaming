@@ -3,6 +3,7 @@ SCRIPT=`python -c "import os,sys; print(os.path.realpath(os.path.expanduser(sys.
 export PROJECT_DIR=$(dirname $SCRIPT)
 export GO111MODULE=on
 export DOCKER_HOST_IP=127.0.0.1
+export GOPROXY=direct
 
 WANT_VERSION=$(cat .goversion)
 GOT_VERSION=$(go version | awk '{print $3}')

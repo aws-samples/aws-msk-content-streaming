@@ -10,6 +10,8 @@ service Monolog {
   rpc Insert(Insert.Request) returns (Insert.Response);
   // Update ...
   rpc Update(Update.Request) returns (Update.Response);
+  // ListArticles ...
+  rpc ListArticles(ListArticles.Request) returns (stream ListArticles.Response);
 }
 
 // Item ...
@@ -57,6 +59,18 @@ message Update {
   // Response ...
   message Response {
     string uuid = 1;
+  }
+}
+
+// ListArticles ...
+message ListArticles {
+  // Request ...
+  message Request {
+    int32 count = 1;
+  }
+  // Response ...
+  message Response {
+    repeated Article articles = 1;
   }
 }
 

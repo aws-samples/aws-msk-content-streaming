@@ -2,101 +2,81 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
-	"time"
+	"net"
+
+	pb "github.com/katallaxie/content_streaming_msk/proto"
 
 	"github.com/Shopify/sarama"
-	owm "github.com/briandowns/openweathermap"
+	"github.com/golang/protobuf/proto"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 )
 
 type root struct {
 	logger *log.Entry
 }
 
+type server struct {
+	pb.UnimplementedMonologServer
+}
+
+func (s *server) Insert(ctx context.Context, req *pb.Insert_Request) (*pb.Insert_Response, error) {
+	uuid := uuid.New()
+
+	config := sarama.NewConfig()
+	config.Producer.Return.Successes = true
+	producer, err := sarama.NewSyncProducer(viper.GetStringSlice("brokers"), config)
+	if err != nil {
+		return nil, err
+	}
+
+	defer producer.Close()
+
+	// extracing the item and assigning an uuid.
+	// the uuid is a message id, so that the log compaction works.
+	item := req.GetItem()
+
+	switch i := item.Item.(type) {
+	case *pb.Item_Image:
+		i.Image.Uuid = uuid.String()
+	case *pb.Item_Article:
+		i.Article.Uuid = uuid.String()
+	}
+
+	// marshal into new message
+	b, err := proto.Marshal(item)
+	if err != nil {
+		return nil, err
+	}
+
+	msg := &sarama.ProducerMessage{Topic: viper.GetString("topic"), Value: sarama.ByteEncoder(b)}
+	partition, offset, err := producer.SendMessage(msg)
+
+	// logging where we send this
+	log.Infof("send to partition %s with offset %s", partition, offset)
+
+	return &pb.Insert_Response{Uuid: uuid.String()}, nil
+}
+
+func (s *server) Update(ctx context.Context, req *pb.Update_Request) (*pb.Update_Response, error) {
+	return nil, nil
+}
+
 func runE(cmd *cobra.Command, args []string) error {
-	// create a new root
-	// root := new(root)
-
-	// create root context
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	g, gtx := errgroup.WithContext(ctx)
-
-	// data channel
-	data := make(chan owm.CurrentWeatherData, 100)
-
-	// schedule weather
-	g.Go(fetchWeather(gtx, data))
-	g.Go(publishWeather(gtx, data))
-
-	// wait
-	if err := g.Wait(); err != nil {
+	lis, err := net.Listen("tcp", viper.GetString("port"))
+	if err != nil {
 		return err
 	}
 
-	// noop
+	s := grpc.NewServer()
+	pb.RegisterMonologServer(s, &server{})
+
+	if err := s.Serve(lis); err != nil {
+		return err
+	}
+
 	return nil
-}
-
-func publishWeather(ctx context.Context, data <-chan owm.CurrentWeatherData) func() error {
-	return func() error {
-		config := sarama.NewConfig()
-		config.Producer.Return.Successes = true
-		producer, err := sarama.NewSyncProducer([]string{"localhost:9092"}, config)
-		if err != nil {
-			return err
-		}
-
-		defer func() {
-			if err := producer.Close(); err != nil {
-				log.Fatalln(err)
-			}
-		}()
-
-		for {
-			select {
-			case <-ctx.Done():
-				return nil
-			case w := <-data:
-				b, err := json.Marshal(w)
-				if err != nil {
-					return err
-				}
-
-				msg := &sarama.ProducerMessage{Topic: "example.weather", Value: sarama.ByteEncoder(b)}
-				partition, offset, err := producer.SendMessage(msg)
-
-				log.Printf("send to partition %s with offset %s", partition, offset)
-			}
-		}
-	}
-}
-
-func fetchWeather(ctx context.Context, data chan<- owm.CurrentWeatherData) func() error {
-	return func() error {
-		ticker := time.NewTicker(10 * time.Second)
-
-		w, err := owm.NewCurrent("C", "en", viper.GetString("api-key")) // fahrenheit (imperial) with Russian output
-		if err != nil {
-			return err
-		}
-
-		for {
-			select {
-			case <-ticker.C:
-				if err := w.CurrentByName("Berlin"); err != nil {
-					return err
-				}
-
-				data <- *w // we dereference here
-			case <-ctx.Done():
-				return nil
-			}
-		}
-	}
 }

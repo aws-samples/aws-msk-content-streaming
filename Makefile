@@ -93,7 +93,7 @@ fmt: ; $(info $(M) running gofmt…) @ ## Run gofmt on all source files
 
 .PHONY: proto
 proto: ; $(info $(M) generating service ...)	@ ## Generating service ...
-	@protoc --go_out=plugins=grpc:./proto --proto_path=proto proto/*.proto
+	@protoc --go_out=plugins=grpc:./proto --js_out=import_style=commonjs:./client/src/proto --grpc-web_out=import_style=commonjs+dts,mode=grpcwebtext:./client/src/proto --proto_path=proto proto/*.proto
 
 .PHONY: clean
 clean: ; $(info $(M) cleaning…)	@ ## Cleanup everything

@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/motain/xp-monet/ingest/cmd"
+	"github.com/katallaxie/content_streaming_msk/ingest/cmd"
 )
 
 func init() {

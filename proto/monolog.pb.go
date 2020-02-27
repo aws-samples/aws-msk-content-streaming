@@ -430,6 +430,118 @@ func (m *Update_Response) GetUuid() string {
 	return ""
 }
 
+// ListArticles ...
+type ListArticles struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ListArticles) Reset()         { *m = ListArticles{} }
+func (m *ListArticles) String() string { return proto.CompactTextString(m) }
+func (*ListArticles) ProtoMessage()    {}
+func (*ListArticles) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9ed8d4c6d9012501, []int{5}
+}
+
+func (m *ListArticles) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListArticles.Unmarshal(m, b)
+}
+func (m *ListArticles) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListArticles.Marshal(b, m, deterministic)
+}
+func (m *ListArticles) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListArticles.Merge(m, src)
+}
+func (m *ListArticles) XXX_Size() int {
+	return xxx_messageInfo_ListArticles.Size(m)
+}
+func (m *ListArticles) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListArticles.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListArticles proto.InternalMessageInfo
+
+// Request ...
+type ListArticles_Request struct {
+	Count                int32    `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ListArticles_Request) Reset()         { *m = ListArticles_Request{} }
+func (m *ListArticles_Request) String() string { return proto.CompactTextString(m) }
+func (*ListArticles_Request) ProtoMessage()    {}
+func (*ListArticles_Request) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9ed8d4c6d9012501, []int{5, 0}
+}
+
+func (m *ListArticles_Request) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListArticles_Request.Unmarshal(m, b)
+}
+func (m *ListArticles_Request) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListArticles_Request.Marshal(b, m, deterministic)
+}
+func (m *ListArticles_Request) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListArticles_Request.Merge(m, src)
+}
+func (m *ListArticles_Request) XXX_Size() int {
+	return xxx_messageInfo_ListArticles_Request.Size(m)
+}
+func (m *ListArticles_Request) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListArticles_Request.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListArticles_Request proto.InternalMessageInfo
+
+func (m *ListArticles_Request) GetCount() int32 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+// Response ...
+type ListArticles_Response struct {
+	Articles             []*Article `protobuf:"bytes,1,rep,name=articles,proto3" json:"articles,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
+	XXX_unrecognized     []byte     `json:"-"`
+	XXX_sizecache        int32      `json:"-"`
+}
+
+func (m *ListArticles_Response) Reset()         { *m = ListArticles_Response{} }
+func (m *ListArticles_Response) String() string { return proto.CompactTextString(m) }
+func (*ListArticles_Response) ProtoMessage()    {}
+func (*ListArticles_Response) Descriptor() ([]byte, []int) {
+	return fileDescriptor_9ed8d4c6d9012501, []int{5, 1}
+}
+
+func (m *ListArticles_Response) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ListArticles_Response.Unmarshal(m, b)
+}
+func (m *ListArticles_Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ListArticles_Response.Marshal(b, m, deterministic)
+}
+func (m *ListArticles_Response) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ListArticles_Response.Merge(m, src)
+}
+func (m *ListArticles_Response) XXX_Size() int {
+	return xxx_messageInfo_ListArticles_Response.Size(m)
+}
+func (m *ListArticles_Response) XXX_DiscardUnknown() {
+	xxx_messageInfo_ListArticles_Response.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ListArticles_Response proto.InternalMessageInfo
+
+func (m *ListArticles_Response) GetArticles() []*Article {
+	if m != nil {
+		return m.Articles
+	}
+	return nil
+}
+
 // Empty ...
 type Empty struct {
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -441,7 +553,7 @@ func (m *Empty) Reset()         { *m = Empty{} }
 func (m *Empty) String() string { return proto.CompactTextString(m) }
 func (*Empty) ProtoMessage()    {}
 func (*Empty) Descriptor() ([]byte, []int) {
-	return fileDescriptor_9ed8d4c6d9012501, []int{5}
+	return fileDescriptor_9ed8d4c6d9012501, []int{6}
 }
 
 func (m *Empty) XXX_Unmarshal(b []byte) error {
@@ -472,32 +584,41 @@ func init() {
 	proto.RegisterType((*Update)(nil), "proto.Update")
 	proto.RegisterType((*Update_Request)(nil), "proto.Update.Request")
 	proto.RegisterType((*Update_Response)(nil), "proto.Update.Response")
+	proto.RegisterType((*ListArticles)(nil), "proto.ListArticles")
+	proto.RegisterType((*ListArticles_Request)(nil), "proto.ListArticles.Request")
+	proto.RegisterType((*ListArticles_Response)(nil), "proto.ListArticles.Response")
 	proto.RegisterType((*Empty)(nil), "proto.Empty")
 }
 
-func init() { proto.RegisterFile("monolog.proto", fileDescriptor_9ed8d4c6d9012501) }
+func init() {
+	proto.RegisterFile("monolog.proto", fileDescriptor_9ed8d4c6d9012501)
+}
 
 var fileDescriptor_9ed8d4c6d9012501 = []byte{
-	// 292 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x91, 0xcf, 0x4b, 0x84, 0x40,
-	0x14, 0xc7, 0xd7, 0xf2, 0x47, 0x3d, 0x2b, 0x62, 0xa0, 0x10, 0x0f, 0xed, 0x22, 0x1d, 0x96, 0x85,
-	0x5c, 0xb2, 0xc3, 0x9e, 0x0b, 0x82, 0xf5, 0xd0, 0x65, 0xa8, 0x7b, 0x9a, 0x2f, 0x11, 0x1c, 0xc7,
-	0xf4, 0x79, 0x58, 0xfa, 0xe7, 0xc3, 0x19, 0x67, 0x0f, 0xb5, 0xc7, 0x4e, 0xbe, 0xf7, 0x99, 0xef,
-	0x8f, 0x07, 0xc2, 0xb9, 0x90, 0x8d, 0xac, 0x65, 0x19, 0xb7, 0x9d, 0x24, 0xc9, 0x1c, 0xf5, 0x09,
-	0xe7, 0xa5, 0x94, 0x65, 0x8d, 0x6b, 0xb5, 0xe5, 0xc3, 0xe7, 0x9a, 0x2a, 0x81, 0x3d, 0x65, 0xa2,
-	0xd5, 0xba, 0xe8, 0x1d, 0xec, 0x94, 0x50, 0xb0, 0x15, 0x78, 0x59, 0x47, 0xd5, 0x47, 0x8d, 0x01,
-	0x2c, 0xac, 0xa5, 0x9f, 0x5c, 0x68, 0x41, 0xfc, 0xa8, 0xe9, 0x76, 0xc6, 0x8d, 0x80, 0xdd, 0x82,
-	0x53, 0x89, 0xac, 0xc4, 0xc0, 0x57, 0xca, 0xb3, 0x49, 0x99, 0x8e, 0x6c, 0x3b, 0xe3, 0xfa, 0xf1,
-	0xc9, 0x05, 0xbb, 0x22, 0x14, 0xd1, 0x3d, 0x78, 0x53, 0x06, 0x63, 0x60, 0x0f, 0x43, 0x55, 0x04,
-	0xd6, 0xc2, 0x5a, 0x9e, 0x72, 0x35, 0x8f, 0x2c, 0x97, 0xc5, 0x2e, 0x38, 0xd2, 0x6c, 0x9c, 0xa3,
-	0x3b, 0x70, 0x54, 0xd8, 0x41, 0xc3, 0x25, 0x1c, 0x0f, 0x5d, 0x3d, 0xe9, 0xc7, 0x31, 0x7a, 0x05,
-	0x37, 0x6d, 0x7a, 0xec, 0x28, 0x5c, 0x81, 0xc7, 0xf1, 0x6b, 0xc0, 0x9e, 0xd8, 0x5c, 0xd7, 0x2b,
-	0xab, 0x9f, 0xf8, 0xe6, 0x46, 0x42, 0xc1, 0xd5, 0x43, 0x78, 0x03, 0x27, 0x1c, 0xfb, 0x56, 0x36,
-	0xfd, 0xc1, 0x9e, 0x31, 0xf5, 0xad, 0x2d, 0x32, 0xc2, 0x7f, 0x4d, 0xf5, 0xc0, 0x79, 0x16, 0x2d,
-	0xed, 0x92, 0x6f, 0xf0, 0x5e, 0xf4, 0x1f, 0x63, 0x1b, 0x73, 0x3f, 0xbb, 0x32, 0x81, 0x6a, 0x8d,
-	0xa7, 0xd6, 0xf0, 0xfa, 0x37, 0x9e, 0x0a, 0x36, 0xe6, 0xc4, 0xbd, 0x51, 0xaf, 0x7f, 0x8c, 0x7b,
-	0xac, 0x8d, 0xb9, 0xab, 0xf0, 0xc3, 0x4f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xb5, 0xe9, 0x57, 0xc0,
-	0x35, 0x02, 0x00, 0x00,
+	// 353 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x52, 0xcd, 0x4e, 0xc2, 0x40,
+	0x10, 0xa6, 0x42, 0x29, 0x4e, 0xd1, 0x98, 0x8d, 0x9a, 0xa6, 0x1a, 0x21, 0x8d, 0x07, 0x42, 0x22,
+	0x28, 0x26, 0x72, 0xd6, 0xc4, 0x04, 0xa2, 0x5e, 0x36, 0x7a, 0xb7, 0xc0, 0xda, 0x34, 0xe9, 0x76,
+	0x6b, 0x77, 0x7a, 0xe0, 0x0d, 0x7d, 0x2c, 0xd3, 0xdd, 0x6d, 0x45, 0xe1, 0xe8, 0x89, 0x99, 0xef,
+	0x6f, 0x86, 0xd9, 0xc2, 0x01, 0x17, 0xa9, 0x48, 0x44, 0x34, 0xca, 0x72, 0x81, 0x82, 0xd8, 0xea,
+	0xc7, 0xef, 0x45, 0x42, 0x44, 0x09, 0x1b, 0xab, 0x6e, 0x51, 0x7c, 0x8c, 0x31, 0xe6, 0x4c, 0x62,
+	0xc8, 0x33, 0xad, 0x0b, 0xde, 0xa1, 0x35, 0x47, 0xc6, 0xc9, 0x10, 0x9c, 0x30, 0xc7, 0x78, 0x99,
+	0x30, 0x0f, 0xfa, 0xd6, 0xc0, 0x9d, 0x1c, 0x6a, 0xc1, 0xe8, 0x5e, 0xa3, 0xb3, 0x06, 0xad, 0x04,
+	0xe4, 0x12, 0xec, 0x98, 0x87, 0x11, 0xf3, 0x5c, 0xa5, 0xec, 0x1a, 0xe5, 0xbc, 0xc4, 0x66, 0x0d,
+	0xaa, 0xc9, 0x87, 0x36, 0xb4, 0x62, 0x64, 0x3c, 0xb8, 0x01, 0xc7, 0x64, 0x10, 0x02, 0xad, 0xa2,
+	0x88, 0x57, 0x9e, 0xd5, 0xb7, 0x06, 0xfb, 0x54, 0xd5, 0x25, 0xb6, 0x10, 0xab, 0xb5, 0xb7, 0xa7,
+	0xb1, 0xb2, 0x0e, 0xae, 0xc0, 0x56, 0x61, 0x3b, 0x0d, 0x47, 0xd0, 0x2c, 0xf2, 0xc4, 0xe8, 0xcb,
+	0x32, 0x78, 0x85, 0xf6, 0x3c, 0x95, 0x2c, 0x47, 0x7f, 0x08, 0x0e, 0x65, 0x9f, 0x05, 0x93, 0x48,
+	0x7a, 0x7a, 0xbc, 0xb2, 0xba, 0x13, 0xb7, 0xda, 0x11, 0x19, 0xa7, 0x8a, 0xf0, 0x2f, 0xa0, 0x43,
+	0x99, 0xcc, 0x44, 0x2a, 0x77, 0xce, 0x29, 0x53, 0xdf, 0xb2, 0x55, 0x88, 0xec, 0x5f, 0x53, 0x23,
+	0xe8, 0x3e, 0xc7, 0x12, 0xcd, 0x45, 0xa4, 0xdf, 0xfb, 0xc9, 0x3e, 0x06, 0x7b, 0x29, 0x8a, 0x14,
+	0x95, 0xde, 0xa6, 0xba, 0xf1, 0xef, 0x36, 0x02, 0x87, 0xd0, 0x31, 0x6f, 0x20, 0x3d, 0xab, 0xdf,
+	0xdc, 0x7e, 0x25, 0x5a, 0xf3, 0x81, 0x03, 0xf6, 0x23, 0xcf, 0x70, 0x3d, 0xf9, 0xb2, 0xc0, 0x79,
+	0xd1, 0xdf, 0x06, 0x99, 0x56, 0x97, 0x22, 0x27, 0xd5, 0xea, 0xaa, 0x1d, 0x99, 0x1d, 0xfc, 0xd3,
+	0xbf, 0xb0, 0x99, 0x3c, 0xad, 0x8e, 0x51, 0x1b, 0x75, 0xbb, 0x65, 0xac, 0x61, 0x63, 0x7c, 0xfa,
+	0xfd, 0x7f, 0xc9, 0x99, 0xd1, 0x6d, 0x82, 0x75, 0xc8, 0xf9, 0x6e, 0x52, 0x47, 0x5d, 0x5b, 0x8b,
+	0xb6, 0xa2, 0x6f, 0xbf, 0x03, 0x00, 0x00, 0xff, 0xff, 0x5f, 0x05, 0xbb, 0xed, 0xec, 0x02, 0x00,
+	0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -516,6 +637,8 @@ type MonologClient interface {
 	Insert(ctx context.Context, in *Insert_Request, opts ...grpc.CallOption) (*Insert_Response, error)
 	// Update ...
 	Update(ctx context.Context, in *Update_Request, opts ...grpc.CallOption) (*Update_Response, error)
+	// ListArticles ...
+	ListArticles(ctx context.Context, in *ListArticles_Request, opts ...grpc.CallOption) (Monolog_ListArticlesClient, error)
 }
 
 type monologClient struct {
@@ -544,12 +667,46 @@ func (c *monologClient) Update(ctx context.Context, in *Update_Request, opts ...
 	return out, nil
 }
 
+func (c *monologClient) ListArticles(ctx context.Context, in *ListArticles_Request, opts ...grpc.CallOption) (Monolog_ListArticlesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_Monolog_serviceDesc.Streams[0], "/proto.Monolog/ListArticles", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &monologListArticlesClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Monolog_ListArticlesClient interface {
+	Recv() (*ListArticles_Response, error)
+	grpc.ClientStream
+}
+
+type monologListArticlesClient struct {
+	grpc.ClientStream
+}
+
+func (x *monologListArticlesClient) Recv() (*ListArticles_Response, error) {
+	m := new(ListArticles_Response)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // MonologServer is the server API for Monolog service.
 type MonologServer interface {
 	// Insert ...
 	Insert(context.Context, *Insert_Request) (*Insert_Response, error)
 	// Update ...
 	Update(context.Context, *Update_Request) (*Update_Response, error)
+	// ListArticles ...
+	ListArticles(*ListArticles_Request, Monolog_ListArticlesServer) error
 }
 
 // UnimplementedMonologServer can be embedded to have forward compatible implementations.
@@ -561,6 +718,9 @@ func (*UnimplementedMonologServer) Insert(ctx context.Context, req *Insert_Reque
 }
 func (*UnimplementedMonologServer) Update(ctx context.Context, req *Update_Request) (*Update_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (*UnimplementedMonologServer) ListArticles(req *ListArticles_Request, srv Monolog_ListArticlesServer) error {
+	return status.Errorf(codes.Unimplemented, "method ListArticles not implemented")
 }
 
 func RegisterMonologServer(s *grpc.Server, srv MonologServer) {
@@ -603,6 +763,27 @@ func _Monolog_Update_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Monolog_ListArticles_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ListArticles_Request)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(MonologServer).ListArticles(m, &monologListArticlesServer{stream})
+}
+
+type Monolog_ListArticlesServer interface {
+	Send(*ListArticles_Response) error
+	grpc.ServerStream
+}
+
+type monologListArticlesServer struct {
+	grpc.ServerStream
+}
+
+func (x *monologListArticlesServer) Send(m *ListArticles_Response) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 var _Monolog_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.Monolog",
 	HandlerType: (*MonologServer)(nil),
@@ -616,6 +797,12 @@ var _Monolog_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Monolog_Update_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ListArticles",
+			Handler:       _Monolog_ListArticles_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "monolog.proto",
 }
