@@ -1,4 +1,3 @@
-
 version: "3.7"
 
 services:
@@ -8,20 +7,12 @@ services:
     ports:
       - "2181:2181"
     environment:
-        ZOO_MY_ID: 1
-        ZOO_PORT: 2181
-        ZOO_SERVERS: server.1=zoo1:2888:3888
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+      ZOO_SERVERS: server.1=zoo1:2888:3888
     volumes:
       - ./zk-single-kafka-single/zoo1/data:/data
       - ./zk-single-kafka-single/zoo1/datalog:/datalog
-
-  kafka-manager:
-    image: sheepkiller/kafka-manager:latest
-    ports:
-      - "9000:9000"
-    environment:
-      ZK_HOSTS: zoo1:2181
-      KM_ARGS: -Djava.net.preferIPv4Stack=true
 
   kafka1:
     image: confluentinc/cp-kafka:5.4.0
