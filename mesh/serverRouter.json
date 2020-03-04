@@ -1,0 +1,13 @@
+{
+  "spec": {
+    "listeners": [
+      {
+        "portMapping": {
+          "port": 9090,
+          "protocol": "grpc"
+        }
+      }
+    ]
+  },
+  "virtualRouterName": "virtual-router"
+}

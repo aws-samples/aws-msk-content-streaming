@@ -4,6 +4,7 @@ ehthumbs.db
 Icon?
 Thumbs.db
 
+bin
 release/*
 NOTES*
 zk-single-kafka-single

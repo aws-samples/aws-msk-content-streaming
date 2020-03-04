@@ -1,5 +1,5 @@
 import React from "react";
-import { Pane, Card } from "evergreen-ui";
+import { Pane, Card, Paragraph, Heading } from "evergreen-ui";
 import { Article } from "./proto/proto_pb";
 
 export default function(props: any) {
@@ -7,7 +7,8 @@ export default function(props: any) {
   const articles = props.articles;
   const listArticles = articles.map((article: Article) => (
     <Card border="default" padding={16} margin={8} key={article.getUuid()}>
-      {article.getBody()}
+      <Heading>{article.getTitle()}</Heading>
+      <Paragraph>{article.getBody()}</Paragraph>
     </Card>
   ));
 

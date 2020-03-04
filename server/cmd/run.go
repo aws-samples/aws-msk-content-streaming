@@ -19,8 +19,9 @@ func runE(cmd *cobra.Command, args []string) error {
 
 	// init logger
 	root.logger = log.WithFields(log.Fields{
-		"debug":   viper.GetBool("debug"),
 		"verbose": viper.GetBool("verbose"),
+		"brokers": viper.GetStringSlice("brokers"),
+		"topic":   viper.GetString("topic"),
 	})
 
 	// create root context
@@ -29,6 +30,16 @@ func runE(cmd *cobra.Command, args []string) error {
 
 	// create server
 	s, _ := server.WithContext(ctx)
+
+	// log ...
+	root.logger.Info("Starting server ...")
+
+	// debug listener
+	debug := server.NewDebugListener(
+		server.WithPprof(),
+		server.WithStatusAddr(":8443"),
+	)
+	s.Listen(debug, true)
 
 	// listen for grpc
 	s.Listen(&srv{}, true)

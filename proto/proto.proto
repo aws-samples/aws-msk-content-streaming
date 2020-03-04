@@ -17,25 +17,18 @@ service Micro {
 // Item ...
 message Item {
   oneof item {
-    Article article   = 10;
-    Image image       = 11;
+    Article article = 10;
   }
 }
 
 // Article ...
 message Article {
   // UUID ...
-  string uuid = 1;
+  string uuid   = 1;
+  // Title ...
+  string title  = 2;
   // Body ...
-  string body = 2;
-}
-
-// Image ...
-message Image {
-  // UUID ...
-  string uuid = 1;
-  // URL ...
-  string url  = 2;
+  string body   = 3;
 }
 
 // Insert ...
@@ -66,7 +59,6 @@ message Update {
 message ListArticles {
   // Request ...
   message Request {
-    int32 count = 1;
   }
   // Response ...
   message Response {

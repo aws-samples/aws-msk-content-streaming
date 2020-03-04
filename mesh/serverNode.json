@@ -1,0 +1,28 @@
+{
+  "spec": {
+    "backends": [],
+    "listeners": [
+      {
+        "healthCheck": {
+          "healthyThreshold": 2,
+          "intervalMillis": 5000,
+          "port": 9090,
+          "protocol": "grpc",
+          "timeoutMillis": 2000,
+          "unhealthyThreshold": 3
+        },
+        "portMapping": {
+          "port": 9090,
+          "protocol": "grpc"
+        }
+      }
+    ],
+    "serviceDiscovery": {
+      "awsCloudMap": {
+        "namespaceName": "content.local",
+        "serviceName": "server"
+      }
+    }
+  },
+  "virtualNodeName": "server"
+}

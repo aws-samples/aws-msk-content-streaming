@@ -1,0 +1,25 @@
+{
+  "virtualRouterName": "virtual-router",
+  "routeName": "server",
+  "spec": {
+    "grpcRoute": {
+      "action": {
+        "weightedTargets": [
+          {
+            "virtualNode": "server",
+            "weight": 100
+          }
+        ]
+      },
+      "match": {
+        "serviceName": "proto.Micro"
+      },
+      "timeout": {
+        "idle": {
+          "unit": "s",
+          "value": 0
+        }
+      }
+    }
+  }
+}

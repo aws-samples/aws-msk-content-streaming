@@ -1,0 +1,392 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Application Stack for Content Streaming Workshop"
+Metadata:
+  LICENSE: MIT
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          Detault: Enable App Mesh (optional)
+          Parameters:
+            - EnableAppMesh
+            - EnableAppMeshPreview
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Project name to link stacks
+
+  EnvoyImage:
+    Type: String
+    Description: Envoy container image
+
+  BootstrapBrokers:
+    Type: String
+    Description: List of MSK Brokers
+
+  EnvoyFrontImage:
+    Type: String
+    Description: Frontend envoy image
+
+  ServerImage:
+    Type: String
+    Description: Server app container image
+
+  ContainerPort:
+    Type: Number
+    Description: Port number to use for applications
+    Default: 9090
+
+  EnableAppMesh:
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+    Description: "if true it enables the service on a service mesh"
+    Type: String
+
+  EnableAppMeshPreview:
+    AllowedValues:
+      - "true"
+      - "false"
+    Default: "false"
+    Description: "if true it enables the App Mesh preview channel (only available in us-west-2"
+    Type: String
+
+Conditions:
+  EnableAppMesh: !Equals
+    - !Ref EnableAppMesh
+    - "true"
+  EnableAppMeshPreview: !Equals
+    - !Ref EnableAppMeshPreview
+    - "true"
+
+Resources:
+  PublicLoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Access to the public facing load balancer"
+      VpcId:
+        Fn::ImportValue: !Sub "${ProjectName}:VPC"
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
+
+  PublicLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: "30"
+      Subnets:
+        - Fn::ImportValue: !Sub "${ProjectName}:PublicSubnet1"
+        - Fn::ImportValue: !Sub "${ProjectName}:PublicSubnet2"
+      SecurityGroups:
+        - !Ref PublicLoadBalancerSecurityGroup
+
+  WebTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: "/server_info"
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      HealthCheckPort: 8001
+      TargetType: ip
+      Name: !Sub "${ProjectName}-webtarget"
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 120
+      VpcId:
+        Fn::ImportValue: !Sub "${ProjectName}:VPC"
+
+  PublicLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref WebTargetGroup
+          Type: "forward"
+      LoadBalancerArn: !Ref PublicLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  WebLoadBalancerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref WebTargetGroup
+          Type: "forward"
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - "*"
+      ListenerArn: !Ref PublicLoadBalancerListener
+      Priority: 1
+
+  TaskSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for the tasks"
+      VpcId:
+        Fn::ImportValue: !Sub "${ProjectName}:VPC"
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::ImportValue: !Sub "${ProjectName}:VpcCIDR"
+          IpProtocol: -1
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "${ProjectName}-log-group"
+      RetentionInDays: 30
+
+  TaskIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument: |
+        {
+            "Statement": [{
+                "Effect": "Allow",
+                "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
+                "Action": [ "sts:AssumeRole" ]
+            }]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchFullAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        - arn:aws:iam::aws:policy/AWSAppMeshEnvoyAccess
+        - !If
+          - EnableAppMeshPreview
+          - arn:aws:iam::aws:policy/AWSAppMeshPreviewEnvoyAccess
+          - !Ref AWS::NoValue
+
+  TaskExecutionIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument: |
+        {
+            "Statement": [{
+                "Effect": "Allow",
+                "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
+                "Action": [ "sts:AssumeRole" ]
+            }]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security group for the instances"
+      VpcId:
+        Fn::ImportValue: !Sub "${ProjectName}:VPC"
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::ImportValue: !Sub "${ProjectName}:VpcCIDR"
+          IpProtocol: -1
+
+  EnvoyFrontTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      RequiresCompatibilities:
+        - "FARGATE"
+      Family: "envoy"
+      NetworkMode: "awsvpc"
+      Cpu: 256
+      Memory: 512
+      TaskRoleArn: !Ref TaskIamRole
+      ExecutionRoleArn: !Ref TaskExecutionIamRole
+      ContainerDefinitions:
+        - Name: "envoy"
+          Image: !Ref EnvoyFrontImage
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8080
+              Protocol: "tcp"
+            - ContainerPort: 8001
+              Protocol: "tcp"
+          Ulimits:
+            - Name: "nofile"
+              HardLimit: 15000
+              SoftLimit: 15000
+          HealthCheck:
+            Command:
+              - "CMD-SHELL"
+              - "curl -s http://localhost:8001/server_info | grep state | grep -q LIVE"
+            Interval: 5
+            Timeout: 2
+            Retries: 3
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-group: !Sub "${ProjectName}-log-group"
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: "envoy-frontend"
+
+  FrontendService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - WebLoadBalancerRule
+    Properties:
+      Cluster:
+        Fn::ImportValue: !Sub "${ProjectName}:ECSCluster"
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 1
+      LaunchType: "FARGATE"
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !Ref SecurityGroup
+          Subnets:
+            - Fn::ImportValue: !Sub "${ProjectName}:PrivateSubnet1"
+            - Fn::ImportValue: !Sub "${ProjectName}:PrivateSubnet2"
+      TaskDefinition: !Ref EnvoyFrontTask
+      LoadBalancers:
+        - ContainerName: envoy
+          ContainerPort: 8080
+          TargetGroupArn: !Ref WebTargetGroup
+
+  ServerTaskDef:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      RequiresCompatibilities:
+        - "FARGATE"
+      Family: "server"
+      NetworkMode: "awsvpc"
+      Cpu: 256
+      Memory: 512
+      TaskRoleArn: !Ref TaskIamRole
+      ExecutionRoleArn: !Ref TaskExecutionIamRole
+      ProxyConfiguration: !If
+        - EnableAppMesh
+        - Type: "APPMESH"
+          ContainerName: "envoy"
+          ProxyConfigurationProperties:
+            - Name: "IgnoredUID"
+              Value: "1337"
+            - Name: "ProxyIngressPort"
+              Value: "15000"
+            - Name: "ProxyEgressPort"
+              Value: "15001"
+            - Name: "AppPorts"
+              Value: !Sub "${ContainerPort}"
+            - Name: "EgressIgnoredPorts"
+              Value: "2181,9094,9092"
+            - Name: "EgressIgnoredIPs"
+              Value: "169.254.170.2,169.254.169.254"
+        - !Ref AWS::NoValue
+      ContainerDefinitions:
+        - Name: "app"
+          Image: !Ref ServerImage
+          Essential: true
+          LogConfiguration:
+            LogDriver: "awslogs"
+            Options:
+              awslogs-group: !Sub "${ProjectName}-log-group"
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: "server"
+          PortMappings:
+            - ContainerPort: !Ref ContainerPort
+              Protocol: "tcp"
+            - ContainerPort: 8443
+              Protocol: "tcp"
+          Command:
+            - "--brokers "
+            - !Ref "BootstrapBrokers"
+          Environment:
+            - Name: "PORT"
+              Value: !Sub "${ContainerPort}"
+        - !If
+          - EnableAppMesh
+          - Name: envoy
+            Image: !Ref EnvoyImage
+            Essential: true
+            User: "1337"
+            Ulimits:
+              - Name: "nofile"
+                HardLimit: 15000
+                SoftLimit: 15000
+            PortMappings:
+              - ContainerPort: 9901
+                Protocol: "tcp"
+              - ContainerPort: 15000
+                Protocol: "tcp"
+              - ContainerPort: 15001
+                Protocol: "tcp"
+            HealthCheck:
+              Command:
+                - "CMD-SHELL"
+                - "curl -s http://localhost:9901/server_info | grep state | grep -q LIVE"
+              Interval: 5
+              Timeout: 2
+              Retries: 3
+            LogConfiguration:
+              LogDriver: "awslogs"
+              Options:
+                awslogs-group: !Sub "${ProjectName}-log-group"
+                awslogs-region: !Ref AWS::Region
+                awslogs-stream-prefix: "server-envoy"
+            Environment:
+              - Name: "APPMESH_VIRTUAL_NODE_NAME"
+                Value: !Sub "mesh/${ProjectName}/virtualNode/server"
+              - Name: "ENVOY_LOG_LEVEL"
+                Value: "debug"
+              - !If
+                - EnableAppMeshPreview
+                - Name: "APPMESH_PREVIEW"
+                  Value: 1
+                - !Ref AWS::NoValue
+          - !Ref AWS::NoValue
+
+  ServerRegistry:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: "server"
+      DnsConfig:
+        NamespaceId:
+          Fn::ImportValue: !Sub "${ProjectName}:CloudMapNamespaceId"
+        DnsRecords:
+          - Type: A
+            TTL: 300
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  ServerService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - WebLoadBalancerRule
+    Properties:
+      Cluster:
+        Fn::ImportValue: !Sub "${ProjectName}:ECSCluster"
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+      DesiredCount: 1
+      LaunchType: "FARGATE"
+      ServiceRegistries:
+        - RegistryArn: !GetAtt "ServerRegistry.Arn"
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !Ref SecurityGroup
+          Subnets:
+            - Fn::ImportValue: !Sub "${ProjectName}:PrivateSubnet1"
+            - Fn::ImportValue: !Sub "${ProjectName}:PrivateSubnet2"
+      TaskDefinition: !Ref ServerTaskDef
+
+Outputs:
+  PublicEndpoint:
+    Description: "Public endpoint for the server"
+    Value: !Join ["", ["http://", !GetAtt "PublicLoadBalancer.DNSName"]]
+    Export:
+      Name: !Sub "${ProjectName}:PublicEndpoint"

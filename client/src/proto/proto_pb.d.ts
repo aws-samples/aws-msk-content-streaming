@@ -8,11 +8,6 @@ export class Item extends jspb.Message {
   hasArticle(): boolean;
   clearArticle(): void;
 
-  getImage(): Image | undefined;
-  setImage(value?: Image): void;
-  hasImage(): boolean;
-  clearImage(): void;
-
   getItemCase(): Item.ItemCase;
 
   serializeBinary(): Uint8Array;
@@ -32,19 +27,20 @@ export class Item extends jspb.Message {
 export namespace Item {
   export type AsObject = {
     article?: Article.AsObject;
-    image?: Image.AsObject;
   };
 
   export enum ItemCase {
     ITEM_NOT_SET = 0,
-    ARTICLE = 10,
-    IMAGE = 11
+    ARTICLE = 10
   }
 }
 
 export class Article extends jspb.Message {
   getUuid(): string;
   setUuid(value: string): void;
+
+  getTitle(): string;
+  setTitle(value: string): void;
 
   getBody(): string;
   setBody(value: string): void;
@@ -66,35 +62,8 @@ export class Article extends jspb.Message {
 export namespace Article {
   export type AsObject = {
     uuid: string;
+    title: string;
     body: string;
-  };
-}
-
-export class Image extends jspb.Message {
-  getUuid(): string;
-  setUuid(value: string): void;
-
-  getUrl(): string;
-  setUrl(value: string): void;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): Image.AsObject;
-  static toObject(includeInstance: boolean, msg: Image): Image.AsObject;
-  static serializeBinaryToWriter(
-    message: Image,
-    writer: jspb.BinaryWriter
-  ): void;
-  static deserializeBinary(bytes: Uint8Array): Image;
-  static deserializeBinaryFromReader(
-    message: Image,
-    reader: jspb.BinaryReader
-  ): Image;
-}
-
-export namespace Image {
-  export type AsObject = {
-    uuid: string;
-    url: string;
   };
 }
 
@@ -258,9 +227,6 @@ export namespace ListArticles {
   export type AsObject = {};
 
   export class Request extends jspb.Message {
-    getCount(): number;
-    setCount(value: number): void;
-
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): Request.AsObject;
     static toObject(includeInstance: boolean, msg: Request): Request.AsObject;
@@ -276,9 +242,7 @@ export namespace ListArticles {
   }
 
   export namespace Request {
-    export type AsObject = {
-      count: number;
-    };
+    export type AsObject = {};
   }
 
   export class Response extends jspb.Message {

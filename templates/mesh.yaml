@@ -1,0 +1,73 @@
+Parameters:
+  ProjectName:
+    Type: String
+    Description: Project name to link stacks
+
+Resources:
+  Mesh:
+    Type: AWS::AppMesh::Mesh
+    Properties:
+      MeshName: !Sub "${ProjectName}-mesh"
+
+  ServerNode:
+    Type: AWS::AppMesh::VirtualNode
+    Properties:
+      MeshName: !GetAtt Mesh.MeshName
+      VirtualNodeName: server
+      Spec:
+        Listeners:
+          - PortMapping:
+              Port: 9090
+              Protocol: grpc
+            HealthCheck:
+              HealthyThreshold: 2
+              IntervalMillis: 5000
+              TimeoutMillis: 2000
+              UnhealthyThreshold: 3
+              Port: 9090
+              Protocol: grpc
+        ServiceDiscovery:
+          AWSCloudMap:
+            NamespaceName: !Sub "${ProjectName}.local"
+            ServiceName: server
+
+  VirtualRouter:
+    Type: AWS::AppMesh::VirtualRouter
+    Properties:
+      MeshName: !GetAtt Mesh.MeshName
+      VirtualRouterName: virtual-router
+      Spec:
+        Listeners:
+          - PortMapping:
+              Port: 9090
+              Protocol: grpc
+
+  VirtualService:
+    DependsOn:
+      - VirtualRouter
+    Type: AWS::AppMesh::VirtualService
+    Properties:
+      MeshName: !GetAtt Mesh.MeshName
+      VirtualServiceName: !Sub "server.${ProjectName}.local"
+      Spec:
+        Provider:
+          VirtualRouter:
+            VirtualRouterName: virtual-router
+
+  Route:
+    DependsOn:
+      - VirtualRouter
+      - ServerNode
+    Type: AWS::AppMesh::Route
+    Properties:
+      MeshName: !GetAtt Mesh.MeshName
+      VirtualRouterName: virtual-router
+      RouteName: route
+      Spec:
+        GrpcRoute:
+          Action:
+            WeightedTargets:
+              - VirtualNode: server
+                Weight: 100
+          Match:
+            ServiceName: proto.Micro

@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"context"
+	"crypto/tls"
+	"math"
 	"net"
+	"time"
 
 	pb "github.com/katallaxie/content_streaming_msk/proto"
 
@@ -13,6 +16,8 @@ import (
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	health "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/keepalive"
 	"google.golang.org/grpc/status"
 )
 
@@ -26,8 +31,34 @@ func (s *srv) Start(ctx context.Context, ready func()) func() error {
 			return err
 		}
 
-		ss := grpc.NewServer()
-		pb.RegisterMicroServer(ss, &service{})
+		sarama.Logger = log.New()
+
+		srv := &service{}
+
+		tlsConfig := &tls.Config{}
+		tlsConfig.InsecureSkipVerify = true
+		srv.tlsCfg = tlsConfig
+
+		if err := s.Setup(tlsConfig); err != nil {
+			return err
+		}
+
+		var kaep = keepalive.EnforcementPolicy{
+			MinTime:             5 * time.Second, // If a client pings more than once every 5 seconds, terminate the connection
+			PermitWithoutStream: true,            // Allow pings even when there are no active streams
+		}
+
+		var kasp = keepalive.ServerParameters{
+			MaxConnectionIdle:     time.Duration(math.MaxInt64), // If a client is idle for 15 seconds, send a GOAWAY
+			MaxConnectionAge:      time.Duration(math.MaxInt64), // If any connection is alive for more than 30 seconds, send a GOAWAY
+			MaxConnectionAgeGrace: 5 * time.Second,              // Allow 5 seconds for pending RPCs to complete before forcibly closing connections
+			Time:                  5 * time.Second,              // Ping the client if it is idle for 5 seconds to ensure the connection is still active
+			Timeout:               1 * time.Second,              // Wait 1 second for the ping ack before assuming the connection is dead
+		}
+
+		ss := grpc.NewServer(grpc.KeepaliveEnforcementPolicy(kaep), grpc.KeepaliveParams(kasp))
+		pb.RegisterMicroServer(ss, srv)
+		health.RegisterHealthServer(ss, srv)
 
 		ready()
 
@@ -39,7 +70,38 @@ func (s *srv) Start(ctx context.Context, ready func()) func() error {
 	}
 }
 
+func (s *srv) Setup(tlsCfg *tls.Config) error {
+	config := sarama.NewConfig()
+	config.ClientID = "server"
+	config.Version = sarama.V2_2_0_0
+	config.Net.TLS.Enable = true
+	config.Net.TLS.Config = tlsCfg
+
+	admin, err := sarama.NewClusterAdmin(viper.GetStringSlice("brokers"), config)
+	if err != nil {
+		return err
+	}
+
+	topics, err := admin.ListTopics()
+	if err != nil {
+		return err
+	}
+
+	if _, ok := topics[viper.GetString("topic")]; ok {
+		return nil
+	}
+
+	details := &sarama.TopicDetail{
+		NumPartitions:     1,
+		ReplicationFactor: 2,
+		ConfigEntries:     map[string]*string{"cleanup.policy": asString("compact"), "segment.ms": asString("100"), "min.cleanable.dirty.ratio": asString("0.01")},
+	}
+
+	return admin.CreateTopic(viper.GetString("topic"), details, false)
+}
+
 type service struct {
+	tlsCfg *tls.Config
 	pb.UnimplementedMicroServer
 }
 
@@ -47,7 +109,12 @@ func (s *service) Insert(ctx context.Context, req *pb.Insert_Request) (*pb.Inser
 	uuid := uuid.New()
 
 	config := sarama.NewConfig()
+	config.ClientID = "server"
 	config.Producer.Return.Successes = true
+	config.Version = sarama.V2_2_0_0
+	config.Net.TLS.Enable = true
+	config.Net.TLS.Config = s.tlsCfg
+
 	producer, err := sarama.NewSyncProducer(viper.GetStringSlice("brokers"), config)
 	if err != nil {
 		return nil, err
@@ -60,8 +127,6 @@ func (s *service) Insert(ctx context.Context, req *pb.Insert_Request) (*pb.Inser
 	item := req.GetItem()
 
 	switch i := item.Item.(type) {
-	case *pb.Item_Image:
-		i.Image.Uuid = uuid.String()
 	case *pb.Item_Article:
 		i.Article.Uuid = uuid.String()
 	}
@@ -72,7 +137,7 @@ func (s *service) Insert(ctx context.Context, req *pb.Insert_Request) (*pb.Inser
 		return nil, err
 	}
 
-	msg := &sarama.ProducerMessage{Topic: viper.GetString("topic"), Value: sarama.ByteEncoder(b)}
+	msg := &sarama.ProducerMessage{Topic: viper.GetString("topic"), Key: sarama.StringEncoder(uuid.String()), Value: sarama.ByteEncoder(b)}
 	partition, offset, err := producer.SendMessage(msg)
 	if err != nil {
 		return nil, err
@@ -90,8 +155,11 @@ func (s *service) Update(ctx context.Context, req *pb.Update_Request) (*pb.Updat
 
 func (s *service) ListArticles(req *pb.ListArticles_Request, srv pb.Micro_ListArticlesServer) error {
 	config := sarama.NewConfig()
-	config.ClientID = "go-kafka-consumer"
+	config.ClientID = "server"
 	config.Consumer.Return.Errors = true
+	config.Version = sarama.V2_2_0_0
+	config.Net.TLS.Enable = true
+	config.Net.TLS.Config = s.tlsCfg
 
 	// Create new consumer
 	master, err := sarama.NewConsumer(viper.GetStringSlice("brokers"), config)
@@ -125,6 +193,18 @@ func (s *service) ListArticles(req *pb.ListArticles_Request, srv pb.Micro_ListAr
 	}
 }
 
+func (s *service) Check(ctx context.Context, in *health.HealthCheckRequest) (*health.HealthCheckResponse, error) {
+	log.Infof("Received Check request: %v", in)
+
+	return &health.HealthCheckResponse{Status: health.HealthCheckResponse_SERVING}, nil
+}
+
+func (s *service) Watch(in *health.HealthCheckRequest, _ health.Health_WatchServer) error {
+	log.Infof("Received Watch request: %v", in)
+
+	return status.Error(codes.Unimplemented, "unimplemented")
+}
+
 func consume(topic string, master sarama.Consumer) (chan *sarama.ConsumerMessage, chan *sarama.ConsumerError) {
 	consumers := make(chan *sarama.ConsumerMessage)
 	errors := make(chan *sarama.ConsumerError)
@@ -152,4 +232,8 @@ func consume(topic string, master sarama.Consumer) (chan *sarama.ConsumerMessage
 	}(topic, consumer)
 
 	return consumers, errors
+}
+
+func asString(s string) *string {
+	return &s
 }
