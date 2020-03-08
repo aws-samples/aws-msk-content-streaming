@@ -1,6 +1,7 @@
 MODULE   = $(shell env GO111MODULE=on $(GO) list -m)
 PKGS     = $(or $(PKG),$(shell env GO111MODULE=on $(GO) list ./...))
 BIN      = $(CURDIR)/bin
+DEPLOY   = $(CURDIR)/scripts/deploy.sh
 
 GO      = go
 TIMEOUT = 15
@@ -33,7 +34,21 @@ $(BIN)/golint: PACKAGE=golang.org/x/lint/golint
 
 .PHONY: start
 start: ; $(info $(M) start…) @ ## Start the client
-	@URL="$$(./deploy.sh print_endpoint)"; (cd client; REACT_APP_ENDPOINT=$$URL yarn start)
+	@URL="$$($(DEPLOY) print_endpoint)"; (cd client; REACT_APP_ENDPOINT=$$URL yarn start)
+
+# Deploy
+
+.PHONY: deploy
+deploy: ; $(info $(M) deploy…) @ ## Deploy the application
+	$Q $(DEPLOY)
+
+.PHONY: print_endpoint
+print_endpoint: ; $(info $(M) print endpoint…) @ ## Print the endpoint
+	$Q $(DEPLOY) print_endpoint
+
+.PHONY: delete
+delete: ; $(info $(M) delete…) @ ## Delete the application
+	$Q $(DEPLOY) delete
 
 # Code
 

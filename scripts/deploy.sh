@@ -27,7 +27,7 @@ if [ -z $KEY_PAIR ]; then
     exit 1
 fi
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+DIR="$(pwd)"
 ECR_IMAGE_PREFIX=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${PROJECT_NAME}
 TEMPLATES="$DIR/templates"
 
@@ -180,8 +180,6 @@ delete_stacks() {
     # delete_cfn_stack "${PROJECT_NAME}-mesh"
 
     delete_images
-
-    echo "all resources from this tutorial have been removed"
 }
 
 action=${1:-"deploy"}
@@ -190,47 +188,8 @@ if [ "$action" == "delete" ]; then
     exit 0
 fi
 
-if [ "$action" == "deploy_infra" ]; then
-    deploy_infra
-    exit 0
-fi
-
-if [ "$action" == "delete_mesh" ]; then
-    delete_mesh
-    exit 0
-fi
-
-if [ "$action" == "deploy_images" ]; then
-    deploy_images
-    exit 0
-fi
-
-if [ "$action" == "deploy_mesh" ]; then
-    deploy_mesh
-    exit 0
-fi
-
-if [ "$action" == "deploy_app" ]; then
-    deploy_app
-    exit 0
-fi
-
-if [ "$action" == "print_bastion" ]; then
-    print_bastion
-    exit 0
-fi
-
 if [ "$action" == "print_endpoint" ]; then
     print_endpoint
-    exit 0
-fi
-
-if [ "$action" == "deploy_images" ]; then
-    deploy_images
-    exit 0
-fi
-if [ "$action" == "print_bootstrap_brokers" ]; then
-    print_bootstrap_brokers
     exit 0
 fi
 

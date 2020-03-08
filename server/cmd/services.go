@@ -77,10 +77,19 @@ func (s *srv) Setup(tlsCfg *tls.Config) error {
 	config.Net.TLS.Enable = true
 	config.Net.TLS.Config = tlsCfg
 
-	admin, err := sarama.NewClusterAdmin(viper.GetStringSlice("brokers"), config)
+	client, err := sarama.NewClient(viper.GetStringSlice("brokers"), config)
 	if err != nil {
 		return err
 	}
+
+	defer client.Close()
+
+	admin, err := sarama.NewClusterAdminFromClient(client)
+	if err != nil {
+		return err
+	}
+
+	defer admin.Close()
 
 	topics, err := admin.ListTopics()
 	if err != nil {
