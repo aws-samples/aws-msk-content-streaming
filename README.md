@@ -19,6 +19,22 @@ The example for such a [pub/sub](https://aws.amazon.com/pub-sub-messaging/) mess
 - [gRPC](https://grpc.io) service to subscribe and publish articles
 - [AWS CloudFormation](https://aws.amazon.com/cloudformation/) templates to run the service
 
+## Architecture
+
+The architecture for the service is provisioned by two [CloudFormation](https://aws.amazon.com/cloudformation/) stacks. A core stack that contains naive AWS components like VPC, NAT Gateway and Amazon MSK. And a second app stack, which provisions the app on [Fargate](https://aws.amazon.com/fargate/) with an [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html)
+
+![Application Architecture](images/architecture.png "Microblogging Service")
+
+## Prerequisites
+
+Running the microblogging service that the articles uses to exemplify content streaming on the web with [Amazon MSK](https://aws.amazon.com/msk/) has prerequisites. You need to [create and activate a AWS account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/), if you do not already have one. Furthermore, you need a machine with the required tools installed. The required tools to run it are the following.
+
+- [Docker](https://docs.docker.com/install/)
+- [AWS Command Line Interface](https://aws.amazon.com/cli/)
+- [Node.js](https://nodejs.org/en/) and [Yarn Package Manager](https://yarnpkg.com/)
+- Linux userland with bash
+- [GNU Make](https://www.gnu.org/software/make/)
+
 ---
 
 ## Instructions
@@ -42,20 +58,16 @@ Running the script will deploy the application.
 > This can take a while, as you will create a high available Kafka with Amazon MSK.
 
 ```bash
-./deploy.sh
+make deploy
 ```
 
-When the process is finished, you get the URL for the application with the following command.
-
-```bash
-./deploy.sh print_endpoint
-```
-
-The client is run by the following command. It is not deployed with the application, and listens on [localhost:3000](http://localhost:3000) by default.
+When the process is finished, you can start the React app. It will start the application with the `REACT_APP_ENDPOINT` environment variable which is set to the URL of the provisioned Application Load Balancer.
 
 ```bash
 make start
 ```
+
+You can access the app at [localhost:3000](http://localhost:3000) if a new browser windows has not been opened by the developement server.
 
 ## License
 
