@@ -5,6 +5,7 @@
  */
 
 // GENERATED CODE -- DO NOT EDIT!
+/* eslint-disable */
 
 const grpc = {};
 grpc.web = require("grpc-web");
