@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import { MicroClient } from "./proto/proto_grpc_web_pb";
-import { ListArticles, Article, Insert, Item } from "./proto/proto_pb";
-import { Button, Pane, TextInputField } from "evergreen-ui";
+import { ListArticles, Article } from "./proto/proto_pb";
+import { Pane } from "evergreen-ui";
 import ArticlesList from "./Articles";
+import InsertForm from "./Form";
+import { toaster } from "evergreen-ui";
 
 declare var process: {
   env: {
@@ -11,41 +13,11 @@ declare var process: {
   };
 };
 
+const mono = new MicroClient(process.env.REACT_APP_ENDPOINT);
+
 function App() {
-  // saving input state
-  const [inputs, setInputs] = useState({});
   // save articles state, this is the list of provided articles
   const [articles, setArticles] = useState<Array<Article>>([]);
-  const mono = new MicroClient(process.env.REACT_APP_ENDPOINT);
-
-  // handling the have to the form fields,
-  // which is the title and the description of the article
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.persist();
-    setInputs(inputs => ({ ...inputs, [e.target.name]: e.target.value }));
-    console.log(inputs);
-  };
-
-  // handling the submit event to the form
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    if (e) {
-      e.preventDefault();
-    }
-
-    const req = new Insert.Request();
-
-    const article = new Article();
-    article.setBody((inputs as any).body);
-    article.setTitle((inputs as any).title);
-
-    const item = new Item();
-    item.setArticle(article);
-    req.setItem(item);
-
-    mono.insert(req, {}, (err, resp) => {
-      console.log(err, resp);
-    });
-  };
 
   const addArticles = (newArticles: Array<Article>) =>
     setArticles(state => [...state, ...newArticles]);
@@ -60,13 +32,15 @@ function App() {
       const list = resp.getArticlesList();
       addArticles(list);
     });
+
     resp.on("status", status => {
       console.log(status);
     });
+
     resp.on("end", function() {
-      console.log("end");
+      toaster.notify("Argh! The client has disconnected");
     });
-  }, [true]);
+  }, []);
 
   return (
     <div className="App">
@@ -80,21 +54,7 @@ function App() {
         <ArticlesList articles={articles} />
       </Pane>
       <Pane border="default" justifyContent="center" margin={16} padding={16}>
-        <form>
-          <TextInputField
-            name="title"
-            label="Title"
-            placeholder="What is the title of your post?"
-            onChange={handleInputChange}
-          />
-          <TextInputField
-            name="body"
-            label="Content"
-            placeholder="What do you want to say?"
-            onChange={handleInputChange}
-          />
-          <Button onClick={handleSubmit}>Create Post</Button>
-        </form>
+        <InsertForm client={mono} />
       </Pane>
     </div>
   );
