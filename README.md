@@ -45,8 +45,6 @@ Next, you have to setup the environment for the `deploy.sh` script. You use the 
 export PROJECT_NAME=<YOUR_PROJECT_NAME>
 export AWS_ACCOUNT_ID=<YOUR_ACCOUNT_ID>
 export AWS_DEFAULT_REGION=<YOUR_AWS_REGION>
-# (see https://docs.aws.amazon.com/app-mesh/latest/userguide/envoy.html)
-export ENVOY_IMAGE=<ENOVY_IMAGE>
 ```
 
 Running the script will deploy the application.

@@ -2,6 +2,7 @@ MODULE   = $(shell env GO111MODULE=on $(GO) list -m)
 PKGS     = $(or $(PKG),$(shell env GO111MODULE=on $(GO) list ./...))
 BIN      = $(CURDIR)/bin
 DEPLOY   = $(CURDIR)/scripts/deploy.sh
+CLIENT 	 = $(CURDIR)/client
 
 GO      = go
 TIMEOUT = 15
@@ -32,8 +33,13 @@ $(BIN)/golint: PACKAGE=golang.org/x/lint/golint
 
 # Start
 
+.PHONY: install
+install: ; $(info $(M) installing…) @ ## Start the client
+	@cd $(CLIENT); yarn -s
+
 .PHONY: start
 start: ; $(info $(M) start…) @ ## Start the client
+	@if [ ! -d "${CURDIR}/client/node_modules" ]; then make install; fi
 	@URL="$$($(DEPLOY) print_endpoint)"; (cd client; REACT_APP_ENDPOINT=$$URL yarn start)
 
 # Deploy
@@ -69,7 +75,7 @@ proto: ; $(info $(M) generating service ...)	@ ## Generating gRPC service
 .PHONY: clean
 clean: ; $(info $(M) cleaning…)	@ ## Cleanup everything
 	@rm -rf $(BIN)
-	@rm -rf zk-single-kafka-single
+	@rm -rf $(CLIENT)/node_modules
 
 .PHONY: help
 help:

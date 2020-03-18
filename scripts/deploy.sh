@@ -17,11 +17,6 @@ if [ -z $AWS_DEFAULT_REGION ]; then
     exit 1
 fi
 
-if [ -z $ENVOY_IMAGE ]; then
-    echo "ENVOY_IMAGE environment variable is not set to App Mesh Envoy, see https://docs.aws.amazon.com/app-mesh/latest/userguide/envoy.html"
-    exit 1
-fi
-
 if [ -z $KEY_PAIR ]; then
     echo "KEY_PAIR environment variable is not set. This must be the name of an SSH key pair, see https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html"
     exit 1
@@ -58,7 +53,7 @@ deploy_app() {
         --stack-name "${PROJECT_NAME}-app" \
         --template-file "${TEMPLATES}/app.yaml" \
         --capabilities CAPABILITY_IAM \
-        --parameter-overrides "ProjectName=${PROJECT_NAME}" "EnvoyImage=${ENVOY_IMAGE}" "ServerImage=${ECR_IMAGE_PREFIX}/server" "EnvoyFrontImage=${ECR_IMAGE_PREFIX}/envoy" "BootstrapBrokers=$(get_bootstrap_brokers)"
+        --parameter-overrides "ProjectName=${PROJECT_NAME}" "ServerImage=${ECR_IMAGE_PREFIX}/server" "EnvoyFrontImage=${ECR_IMAGE_PREFIX}/envoy" "BootstrapBrokers=$(get_bootstrap_brokers)"
 }
 
 deploy_mesh() {
