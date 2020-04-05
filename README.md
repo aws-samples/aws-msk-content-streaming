@@ -1,4 +1,4 @@
-# How to Stream Content on the Web with Log-Based Architectures on Amazon MSK
+# How to Stream Content on the Web with Amazon MSK
 
 The repository contains the sample code for the article.
 
