@@ -2,6 +2,7 @@ MODULE   = $(shell env GO111MODULE=on $(GO) list -m)
 PKGS     = $(or $(PKG),$(shell env GO111MODULE=on $(GO) list ./...))
 BIN      = $(CURDIR)/bin
 DEPLOY   = $(CURDIR)/scripts/deploy.sh
+RESIZE   = $(CURDIR)/scripts/resize.sh
 CLIENT 	 = $(CURDIR)/client
 
 GO      = go
@@ -76,6 +77,10 @@ proto: ; $(info $(M) generating service ...)	@ ## Generating gRPC service
 clean: ; $(info $(M) cleaning…)	@ ## Cleanup everything
 	@rm -rf $(BIN)
 	@rm -rf $(CLIENT)/node_modules
+
+.PHONY: resize
+clean: ; $(info $(M) resizing…)	@ ## Resizing Cloud9
+	$Q $(RESIZE)
 
 .PHONY: help
 help:
