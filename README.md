@@ -193,7 +193,9 @@ When the application is finished to be installed you will see a message that it 
 
 :warning: you cannot post new content yet. Because we do not have a custom domain, we have not enabled HTTPS with our service. You will have to access the preview URL with HTTP.
 
-Either copy the full url (e.g. `https://12345678910.vfs.cloud9.eu-west-1.amazonaws.com/`) and replace `https` with `http`. Or click on the _Pop Out Into New Window_ button next to the browser bar.
+Either copy the full url (e.g. `https://12345678910.vfs.cloud9.eu-west-1.amazonaws.com/`) and replace `https` with `http`. Or click on the _Pop Out Into New Window_ button next to the browser bar and then replace it.
+
+![c9preview](/images/c9preview.png)
 
 You can now test it by creating an new item. Give it a title and add some content. If you have finished click _Create Post_.
 
