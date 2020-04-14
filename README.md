@@ -198,6 +198,14 @@ You can now test it by creating an new item. Give it a title and add some conten
 
 > You can access the app at [localhost:3000](http://localhost:3000) if you run the example on your local machine.
 
+### Cleanup
+
+The last step is to cleanup your account. This will delete all created resources.
+
+```bash
+make delete
+```
+
 ## License
 
 [MIT](/LICENSE)
