@@ -35,6 +35,8 @@ Running the microblogging service that the articles uses to exemplify content st
 
 ## Get Started
 
+First, you need your own AWS account. Follow these [steps](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/) if you do not have an account.
+
 > :warning: Running the application will create and consume AWS resources. This will cost you money. Make sure you shut down/remove all resources once you are finished to avoid ongoing charges to your AWS account.
 
 ### Create a Workspace
@@ -58,10 +60,6 @@ Running the microblogging service that the articles uses to exemplify content st
 ![c9before](/images/c9after.png)
 
 > :boom: If you prefer a different theme, you can choose one by selecting _View > Themes > Solarized > Solarized Dark_
-
-First, you need your own AWS account. Follow these [steps](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/) if you do not have an account.
-
-Next, you have to setup the environment for the `deploy.sh` script. You use the script to deploy and destroy the application.
 
 ### Resize the environment
 
@@ -198,7 +196,7 @@ Either copy the full url (e.g. `https://12345678910.vfs.cloud9.eu-west-1.amazona
 
 You can now test it by creating an new item. Give it a title and add some content. If you have finished click _create post_
 
-> You can access the app at [localhost:3000](http://localhost:3000) if a new browser windows has not been opened by the developement server.
+> You can access the app at [localhost:3000](http://localhost:3000) if you run the example on your local machine.
 
 ## License
 
