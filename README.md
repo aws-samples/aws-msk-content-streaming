@@ -21,19 +21,9 @@ The architecture for the service is provisioned by two [CloudFormation](https://
 
 ![Application Architecture](images/architecture.png "Microblogging Service")
 
-## Prerequisites
-
-Running the microblogging service that the articles uses to exemplify content streaming on the web with [Amazon MSK](https://aws.amazon.com/msk/) has prerequisites. You need to [create and activate a AWS account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/), if you do not already have one. Furthermore, you need a machine with the required tools installed. The required tools to run it are the following.
-
-- [Docker](https://docs.docker.com/install/)
-- [AWS Command Line Interface](https://aws.amazon.com/cli/)
-- [Node.js](https://nodejs.org/en/) and [Yarn Package Manager](https://yarnpkg.com/)
-- Linux userland with bash
-- [GNU Make](https://www.gnu.org/software/make/)
-
 ---
 
-## Get Started
+## Run on AWS Cloud9
 
 First, you need your own AWS account. Follow these [steps](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/) if you do not have an account.
 
@@ -194,7 +184,7 @@ When the application is finished to be installed you will see a message that it 
 
 Either copy the full url (e.g. `https://12345678910.vfs.cloud9.eu-west-1.amazonaws.com/`) and replace `https` with `http`. Or click on the _Pop Out Into New Window_ button next to the browser bar.
 
-You can now test it by creating an new item. Give it a title and add some content. If you have finished click _create post_
+You can now test it by creating an new item. Give it a title and add some content. If you have finished click _Create Post_.
 
 > You can access the app at [localhost:3000](http://localhost:3000) if you run the example on your local machine.
 
@@ -205,6 +195,44 @@ The last step is to cleanup your account. This will delete all created resources
 ```bash
 make delete
 ```
+
+## Run on your machine
+
+You can either run the example on your own machine, or [run on AWS Cloud9](#run-on-aws-cloud9). If you run it on your own machine you will have to install some additional tools.
+
+- [Docker](https://docs.docker.com/install/)
+- [AWS Command Line Interface](https://aws.amazon.com/cli/)
+- [Node.js](https://nodejs.org/en/) and [Yarn Package Manager](https://yarnpkg.com/)
+- Linux userland with bash
+- [GNU Make](https://www.gnu.org/software/make/)
+
+You will have to clone the repository
+
+```bash
+git clone https://github.com/aws-samples/aws-msk-content-streaming aws-msk-content-streaming && cd $_
+```
+
+and manually set the environment variables for the project.
+
+```bash
+export PROJECT_NAME=<YOUR_PROJECT_NAME>
+export AWS_ACCOUNT_ID=<YOUR_ACCOUNT_ID>
+export AWS_DEFAULT_REGION=<YOUR_AWS_REGION>
+```
+
+You can then deploy the CloudFormation Stacks via.
+
+```bash
+make deploy
+```
+
+Start the development server at [localhost:3000](http://localhost:3000) if you run the example on your local machine.
+
+```bash
+make start
+```
+
+And jump to the [cleanup](#cleanup) if you have finished playing around with the example.
 
 ## License
 
