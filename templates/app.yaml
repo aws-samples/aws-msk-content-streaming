@@ -16,6 +16,7 @@ Parameters:
 
   EnvoyImage:
     Type: String
+    Default: "840364872350.dkr.ecr.us-west-2.amazonaws.com/aws-appmesh-envoy:v1.12.2.1-prod"
     Description: Envoy container image
 
   BootstrapBrokers:

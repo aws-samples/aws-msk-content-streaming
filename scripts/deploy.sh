@@ -26,6 +26,11 @@ if [ -z $AWS_DEFAULT_REGION ]; then
     exit 1
 fi
 
+if [ -z $KEY_PAIR ]; then
+    echo "KEYPAIR environment variable is not set."
+    exit 1
+fi
+
 DIR="$(pwd)"
 ECR_IMAGE_PREFIX=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${PROJECT_NAME}
 TEMPLATES="$DIR/templates"
@@ -47,7 +52,7 @@ deploy_infra() {
         --stack-name "${PROJECT_NAME}-infra"\
         --template-file "${TEMPLATES}/infra.yaml" \
         --capabilities CAPABILITY_IAM \
-        --parameter-overrides "ProjectName=${PROJECT_NAME}" "ClusterName=${PROJECT_NAME}"
+        --parameter-overrides "ProjectName=${PROJECT_NAME}" "KeyPair=${KEY_PAIR}" "ClusterName=${PROJECT_NAME}"
 }
 
 deploy_app() {

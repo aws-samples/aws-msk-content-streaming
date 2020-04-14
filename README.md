@@ -39,7 +39,7 @@ Running the microblogging service that the articles uses to exemplify content st
 
 ### Create a Workspace
 
-:warning: The [AWS Cloud9](https://aws.amazon.com/cloud9/) workspace should be created by an IAM user with Administrator privileges, not the root account user. Please ensure that you are logged in as an IAM user, not the root account user.
+> :warning: The [AWS Cloud9](https://aws.amazon.com/cloud9/) workspace should be created by an IAM user with Administrator privileges, not the root account user. Please ensure that you are logged in as an IAM user, not the root account user.
 
 - [Open AWS Cloud9 in the AWS Console](https://console.aws.amazon.com/cloud9/home).
 - Select **Create environment** to create a new workspace
@@ -103,6 +103,32 @@ The workshop needs some tools to be installed in the environment.
 sudo yum install -y jq
 ```
 
+This will install Node.js in your Cloud9 environment.
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+```
+
+Active the environment.
+
+```bash
+. ~/.nvm/nvm.sh
+```
+
+Use `nvm` to install a current version of Node.js.
+
+```bash
+nvm install node
+```
+
+Later we will use the [yarn](https://yarnpkg.com/) package manager for installing the client packages.
+
+```bash
+npm install yarn -g
+```
+
+> :warning: There is an extensive [tutorial](https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/setting-up-node-on-ec2-instance.html) that walks through the steps of setting up Node.js on an Amazon EC2 instance.
+
 ### Clone the workshop
 
 You will need to clone the workshop to your [AWS Cloud9](https://aws.amazon.com/cloud9/) workspace.
@@ -116,6 +142,34 @@ Clone the respository to your environment directory and change into the director
 
 ```bash
 git clone https://github.com/aws-samples/aws-msk-content-streaming aws-msk-content-streaming && cd $_
+```
+
+### Create an SSH Key
+
+Please run this command to generate SSH Key in Cloud9. This key will be used on the worker node instances to allow ssh access if necessary.
+
+```bash
+ssh-keygen
+```
+
+> :warning: Press `enter` 3 times to take the default choices
+
+Upload the public key to your EC2 region.
+
+```bash
+aws ec2 import-key-pair --key-name ${C9_PROJECT} --public-key-material file://~/.ssh/id_rsa.pub
+```
+
+If you got an error similar to `An error occurred (InvalidKey.Format) when calling the ImportKeyPair operation: Key is not in valid OpenSSH public key format` then you can try this command instead.
+
+```bash
+aws ec2 import-key-pair --key-name ${C9_PROJECT} --public-key-material fileb://~/.ssh/id_rsa.pub
+```
+
+Set the environment variable for the `KEY_PAIR`.
+
+```bash
+export KEY_PAIR=${C9_PROJECT}
 ```
 
 ### Deploy the workshop
@@ -136,7 +190,15 @@ When the process is finished, you can start the React app. It will start the app
 make start
 ```
 
-You can access the app at [localhost:3000](http://localhost:3000) if a new browser windows has not been opened by the developement server.
+When the application is finished to be installed you will see a message that it `Compiled successfully!`. You can access the preview by selecting _Preview > Preview Running Runnin Application_ from the toolbar. This will open a new tab with the application.
+
+:warning: you cannot post new content yet. Because we do not have a custom domain, we have not enabled HTTPS with our service. You will have to access the preview URL with HTTP.
+
+Either copy the full url (e.g. `https://12345678910.vfs.cloud9.eu-west-1.amazonaws.com/`) and replace `https` with `http`. Or click on the _Pop Out Into New Window_ button next to the browser bar.
+
+You can now test it by creating an new item. Give it a title and add some content. If you have finished click _create post_
+
+> You can access the app at [localhost:3000](http://localhost:3000) if a new browser windows has not been opened by the developement server.
 
 ## License
 
