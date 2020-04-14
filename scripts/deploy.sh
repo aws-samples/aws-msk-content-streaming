@@ -2,6 +2,15 @@
 
 set -e
 
+# extract the information from the CLOUD9 environment
+TMP_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+TMP_DEFAULT_REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq -c -r .region)
+
+# set defaults
+PROJECT_NAME="${C9_PROJECT:-PROJECT_NAME}"
+AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-TMP_ACCOUNT_ID}"
+AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-TMP_DEFAULT_REGION}"
+
 if [ -z $PROJECT_NAME ]; then
     echo "PROJECT_NAME environment variable is not set."
     exit 1
@@ -43,7 +52,7 @@ deploy_infra() {
         --stack-name "${PROJECT_NAME}-infra"\
         --template-file "${TEMPLATES}/infra.yaml" \
         --capabilities CAPABILITY_IAM \
-        --parameter-overrides "ProjectName=${PROJECT_NAME}" "KeyPair=${KEY_PAIR}" "ClusterName=${PROJECT_NAME}"
+        --parameter-overrides "ProjectName=${PROJECT_NAME}" "ClusterName=${PROJECT_NAME}"
 }
 
 deploy_app() {
@@ -56,6 +65,7 @@ deploy_app() {
         --parameter-overrides "ProjectName=${PROJECT_NAME}" "ServerImage=${ECR_IMAGE_PREFIX}/server" "EnvoyFrontImage=${ECR_IMAGE_PREFIX}/envoy" "BootstrapBrokers=$(get_bootstrap_brokers)"
 }
 
+# Save this for later when App Mesh is ready
 deploy_mesh() {
     mesh_name="${PROJECT_NAME}"
 
@@ -79,6 +89,7 @@ deploy_mesh() {
     #     --parameter-overrides "ProjectName=${PROJECT_NAME}"
 }
 
+# Save this for later when App Mesh is ready
 delete_mesh() {
     mesh_name="${PROJECT_NAME}"
 
@@ -90,15 +101,6 @@ delete_mesh() {
     aws appmesh-preview delete-virtual-node --mesh-name $mesh_name --virtual-node-name server
     aws appmesh-preview delete-mesh --mesh-name $mesh_name
 }
-
-# configure_msk() {
-#   echo "Configuring MSK ..."
-#   aws kafka create-configuration \
-#     --name "${PROJECT_NAME}" \
-#     --description "Topic autocreation enabled; Apache ZooKeeper timeout 2000 ms; Log rolling 604800000 ms." \
-#     --kafka-versions "2.2.1" \
-#     --server-properties file://configuration.txt
-# }
 
 print_bastion() {
     ip=$(aws cloudformation describe-stacks \
@@ -142,11 +144,7 @@ get_bootstrap_brokers() {
 deploy_stacks() {
     deploy_images
     deploy_infra
-    # deploy_mesh
     deploy_app
-
-    # print_bastion
-    # print_endpoint
 }
 
 delete_cfn_stack() {
@@ -169,11 +167,8 @@ delete_images() {
 
 delete_stacks() {
     delete_cfn_stack "${PROJECT_NAME}-app"
-
     delete_cfn_stack "${PROJECT_NAME}-infra"
-
     # delete_cfn_stack "${PROJECT_NAME}-mesh"
-
     delete_images
 }
 
