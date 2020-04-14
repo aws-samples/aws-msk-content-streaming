@@ -61,6 +61,7 @@ Parameters:
 
   KeyPair:
     Type: AWS::EC2::KeyPair::KeyName
+    Default: ""
     Description: "EC2 Key Pair to allow SSH access to the bastion host"
 
 Conditions:
