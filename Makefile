@@ -79,7 +79,7 @@ clean: ; $(info $(M) cleaning…)	@ ## Cleanup everything
 	@rm -rf $(CLIENT)/node_modules
 
 .PHONY: resize
-clean: ; $(info $(M) resizing…)	@ ## Resizing Cloud9
+resize: ; $(info $(M) resizing…)	@ ## Resizing Cloud9
 	$Q $(RESIZE)
 
 .PHONY: help
