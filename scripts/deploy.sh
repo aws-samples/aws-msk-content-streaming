@@ -3,13 +3,13 @@
 set -e
 
 # extract the information from the CLOUD9 environment
-TMP_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-TMP_DEFAULT_REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq -c -r .region)
+TMP_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+TMP_DEFAULT_REGION="$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq -c -r .region)"
 
 # set defaults
-PROJECT_NAME="${C9_PROJECT:-PROJECT_NAME}"
-AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-TMP_ACCOUNT_ID}"
-AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-TMP_DEFAULT_REGION}"
+PROJECT_NAME="${C9_PROJECT:-$PROJECT_NAME}"
+AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-$TMP_ACCOUNT_ID}"
+AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-$TMP_DEFAULT_REGION}"
 
 if [ -z $PROJECT_NAME ]; then
     echo "PROJECT_NAME environment variable is not set."
