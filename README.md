@@ -23,6 +23,17 @@ The architecture for the service is provisioned by two [CloudFormation](https://
 
 ---
 
+## Running the example
+
+You can either run the example on
+
+- [AWS Cloud9](#run-on-aws-cloud9)
+- [Your machine](#run-on-your-machine).
+
+> We recommend using [AWS Cloud9](https://aws.amazon.com/cloud9/) to discover the example.
+
+---
+
 ## Run on AWS Cloud9
 
 First, you need your own AWS account. Follow these [steps](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/) if you do not have an account.
