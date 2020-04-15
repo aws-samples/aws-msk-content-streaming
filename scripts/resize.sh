@@ -17,11 +17,11 @@ aws ec2 modify-volume --volume-id $VOLUMEID --size $SIZE
 
 # Wait for the resize to finish.
 while [ "$(aws ec2 describe-volumes-modifications --volume-id $VOLUMEID --filters Name=modification-state,Values="optimizing","completed" | jq '.VolumesModifications | length')" != "1" ]; do
-  sleep 1
+  sleep 5
 done
 
 # Rewrite the partition table so that the partition takes up all the space that it can.
-sudo growpart /dev/nvme0n1
+sudo growpart /dev/nvme0n1 1
 
 # Expand the size of the file system.
 sudo resize2fs /dev/nvme0n1p1

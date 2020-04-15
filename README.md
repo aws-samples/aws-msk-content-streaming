@@ -62,18 +62,6 @@ First, you need your own AWS account. Follow these [steps](https://aws.amazon.co
 
 > :boom: If you prefer a different theme, you can choose one by selecting _View > Themes > Solarized > Solarized Dark_
 
-### Resize the environment
-
-By default Cloud9 has 8GB storage attached. To build the containers you need more space.
-
-```bash
-make resize
-```
-
-This will resize your environment to 20GB storage.
-
-> If encounter an error that the `/dev/nvme0n1` device does not exists, then this means you are not running on a Nitro-based architecture. Please replace the devices as explained [here](https://docs.aws.amazon.com/cloud9/latest/user-guide/move-environment.html) with the right ones.
-
 ### Update to the latest AWS CLI
 
 - Run the following command to view the current version of the [AWS CLI](https://aws.amazon.com/cli/).
@@ -142,6 +130,18 @@ Clone the respository to your environment directory and change into the director
 ```bash
 git clone https://github.com/aws-samples/aws-msk-content-streaming aws-msk-content-streaming && cd $_
 ```
+
+### Resize the environment
+
+By default Cloud9 has 8GB storage attached. To build the containers you need more space.
+
+```bash
+make resize
+```
+
+This will resize your environment to 20GB storage.
+
+> If encounter an error that the `/dev/nvme0n1` device does not exists, then this means you are not running on a Nitro-based architecture. Please replace the devices as explained [here](https://docs.aws.amazon.com/cloud9/latest/user-guide/move-environment.html) with the right ones.
 
 ### Create an SSH Key
 
