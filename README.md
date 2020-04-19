@@ -4,7 +4,7 @@ The repository contains the sample code for the article.
 
 ## Introduction
 
-The article explains the virtues of log-based architectures and how they can help to build scalable web and mobile applications. [Amazon MSK](https://aws.amazon.com/msk/) is a managed [Apache Kafka](https://kafka.apache.org/). It is based on a commit log and helps you to build log-based architectures.
+![Example](images/example.gif "Example")
 
 The repository contains the example of a [microblogging](https://en.wikipedia.org/wiki/Microblogging) service that uses a log-based architecture on [Amazon MSK](https://aws.amazon.com/msk/). It consists of a [React](https://reactjs.org/) app that allows you to publish and read articles. A service which implements the [gRPC](https://grpc.io/) service to publish and subscribe to the messages (articles) that are created. And the [AWS CloudFormation](https://aws.amazon.com/cloudformation/) templates to run the service on the AWS cloud. The client uses [gRPC for Web Clients](https://github.com/grpc/grpc-web) to communicate with the pub/sub service.
 
