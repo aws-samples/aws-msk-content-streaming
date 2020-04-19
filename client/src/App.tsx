@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
 import "./App.css";
-import { MicroClient } from "./proto/proto_grpc_web_pb";
 import { ListArticles, Article } from "./proto/proto_pb";
+import { MicroClient } from "./proto/proto_grpc_web_pb";
 import { Pane } from "evergreen-ui";
+import { toaster } from "evergreen-ui";
 import ArticlesList from "./Articles";
 import InsertForm from "./Form";
-import { toaster } from "evergreen-ui";
+import React, { useState, useEffect } from "react";
 
 declare var process: {
   env: {
@@ -26,19 +26,26 @@ function App() {
   // we want to avoid to do a new request with every render
   useEffect(() => {
     const req = new ListArticles.Request();
-
     const resp = mono.listArticles(req);
+
     resp.on("data", (resp: ListArticles.Response) => {
       const list = resp.getArticlesList();
       addArticles(list);
     });
 
+    resp.on("error", err => {
+      toaster.danger("Argh! Please reload the browser.", {
+        duration: 60 * 60,
+        hasCloseButton: true
+      });
+    });
+
     resp.on("status", status => {
-      console.log(status);
+      toaster.notify(`The client status changed to ${status}.`);
     });
 
     resp.on("end", function() {
-      toaster.notify("Argh! The client has disconnected");
+      toaster.notify("Argh! The client has disconnected.");
     });
   }, []);
 
