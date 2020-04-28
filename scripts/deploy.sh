@@ -4,7 +4,7 @@ set -e
 
 # extract the information from the CLOUD9 environment
 TMP_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
-TMP_DEFAULT_REGION="$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq -c -r .region)"
+TMP_DEFAULT_REGION="$(curl -s -m 3 http://169.254.169.254/latest/dynamic/instance-identity/document | jq -c -r .region)"
 
 # set defaults
 PROJECT_NAME="${C9_PROJECT:-$PROJECT_NAME}"
@@ -157,7 +157,7 @@ delete_cfn_stack() {
 }
 
 delete_images() {
-    for app in server; do
+    for app in server envoy; do
         echo "deleting repository \"${app}\"..."
         aws ecr delete-repository \
            --repository-name $PROJECT_NAME/$app \
