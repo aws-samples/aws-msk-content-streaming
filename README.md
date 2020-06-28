@@ -1,6 +1,6 @@
-# How to Stream Content on the Web with Amazon MSK
+# Streaming web content with a log-based architecture with Amazon MSK
 
-The repository contains the sample code for the article.
+The repository contains the sample code for the [article](https://aws.amazon.com/blogs/big-data/streaming-web-content-with-a-log-based-architecture-with-amazon-msk/)
 
 ## Introduction
 
